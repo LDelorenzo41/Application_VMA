@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur VMA pour Séances de Demi-Fond</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #007BFF;
+        }
+        .slider-container {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"], input[type="range"] {
+            width: 100%;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculateur VMA pour Séances de Demi-Fond</h1>
+
+    <div class="slider-container">
+        <label for="trackLength">Longueur de la piste (mètres) :</label>
+        <input type="number" id="trackLength" value="200">
+    </div>
+
+    <div class="slider-container">
+        <label for="markerSpacing">Distance entre les repères (mètres) :</label>
+        <input type="number" id="markerSpacing" value="10">
+    </div>
+
+    <div class="slider-container">
+        <label for="vma">VMA (km/h) :</label>
+        <input type="range" id="vma" min="5" max="25" step="0.25" value="15">
+        <span id="vmaValue">15</span> km/h
+    </div>
+
+    <div class="slider-container">
+        <label for="runTime">Temps de course (secondes) :</label>
+        <input type="range" id="runTime" min="30" max="720" step="30" value="300">
+        <span id="runTimeValue">5:00</span>
+    </div>
+
+    <div class="slider-container">
+        <label for="intensity">Intensité de course (%) :</label>
+        <input type="range" id="intensity" min="50" max="120" step="5" value="90">
+        <span id="intensityValue">90</span> %
+    </div>
+
+    <button onclick="calculateDistance()">Calculer la distance</button>
+
+    <h2>Résultats :</h2>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('vma').oninput = function() {
+            document.getElementById('vmaValue').innerText = this.value;
+        };
+
+        document.getElementById('runTime').oninput = function() {
+            const minutes = Math.floor(this.value / 60);
+            const seconds = this.value % 60;
+            document.getElementById('runTimeValue').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        };
+
+        document.getElementById('intensity').oninput = function() {
+            document.getElementById('intensityValue').innerText = this.value;
+            const intensityColor = this.value <= 75 ? `rgb(0, ${(this.value - 50) * 10}, 0)` : this.value <= 100 ? `rgb(${(this.value - 75) * 10}, 255, 0)` : `rgb(255, ${(120 - this.value) * 10}, 0)`;
+            this.style.background = `linear-gradient(to right, #00ff00, ${intensityColor})`;
+        };
+
+        function calculateDistance() {
+            const trackLength = parseFloat(document.getElementById('trackLength').value);
+            const markerSpacing = parseFloat(document.getElementById('markerSpacing').value);
+            const vma = parseFloat(document.getElementById('vma').value);
+            const runTime = parseFloat(document.getElementById('runTime').value);
+            const intensity = parseFloat(document.getElementById('intensity').value);
+
+            // Calculer la vitesse en m/s
+            const speed = (vma * (intensity / 100)) / 3.6;
+
+            // Calculer la distance totale parcourue en mètres
+            const totalDistance = speed * runTime;
+
+            // Calculer le nombre de tours et de repères
+            const numLaps = Math.floor(totalDistance / trackLength);
+            const remainingDistance = totalDistance % trackLength;
+            const numMarkers = Math.round(remainingDistance / markerSpacing);
+
+            // Afficher les résultats
+            document.getElementById('results').innerHTML = `
+                Distance totale : ${totalDistance.toFixed(2)} m<br>
+                Nombre de tours : ${numLaps}<br>
+                Nombre de repères : ${numMarkers}
+            `;
+        }
+    </script>
+</body>
+</html>
